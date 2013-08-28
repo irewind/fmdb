@@ -8,6 +8,9 @@
 
 #import "FMDatabase.h"
 #import "FMDatabaseAdditions.h"
+#import "DDLog.h"
+
+static const int ddLogLevel = LOG_LEVEL_OFF;
 
 @interface FMDatabase (PrivateStuff)
 - (FMResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args;
@@ -155,7 +158,7 @@ return ret;
 - (void)setApplicationIDString:(NSString*)s {
     
     if ([s length] != 4) {
-        NSLog(@"setApplicationIDString: string passed is not exactly 4 chars long. (was %ld)", [s length]);
+        DDLogError(@"setApplicationIDString: string passed is not exactly 4 chars long. (was %ld)", [s length]);
     }
     
     [self setApplicationID:NSHFSTypeCodeFromFileType([NSString stringWithFormat:@"'%@'", s])];
@@ -186,8 +189,8 @@ return ret;
             usleep(20);
             
             if (_busyRetryTimeout && (numberOfRetries++ > _busyRetryTimeout)) {
-                NSLog(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [self databasePath]);
-                NSLog(@"Database busy");
+                DDLogError(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [self databasePath]);
+                DDLogError(@"Database busy");
             }          
         } 
         else if (rc != SQLITE_OK) {

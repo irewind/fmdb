@@ -4,7 +4,7 @@
 #import "FMDatabasePool.h"
 #import "FMDatabaseQueue.h"
 
-#define FMDBQuickCheck(SomeBool) { if (!(SomeBool)) { NSLog(@"Failure on line %d", __LINE__); abort(); } }
+#define FMDBQuickCheck(SomeBool) { if (!(SomeBool)) { DDLogError(@"Failure on line %d", __LINE__); abort(); } }
 
 void testPool(NSString *dbPath);
 void testDateFormat();
@@ -24,18 +24,18 @@ int main (int argc, const char * argv[]) {
     
     FMDatabase *db = [FMDatabase databaseWithPath:dbPath];
     
-    NSLog(@"Is SQLite compiled with it's thread safe options turned on? %@!", [FMDatabase isSQLiteThreadSafe] ? @"Yes" : @"No");
+    DDLogError(@"Is SQLite compiled with it's thread safe options turned on? %@!", [FMDatabase isSQLiteThreadSafe] ? @"Yes" : @"No");
     
     {
         // -------------------------------------------------------------------------------
         // Un-opened database check.
         FMDBQuickCheck([db executeQuery:@"select * from table"] == nil);
-        NSLog(@"%d: %@", [db lastErrorCode], [db lastErrorMessage]);
+        DDLogError(@"%d: %@", [db lastErrorCode], [db lastErrorMessage]);
     }
     
     
     if (![db open]) {
-        NSLog(@"Could not open db.");
+        DDLogError(@"Could not open db.");
         
         return 0;
     }
@@ -49,14 +49,14 @@ int main (int argc, const char * argv[]) {
     FMDBQuickCheck([db hadError]);
     
     if ([db hadError]) {
-        NSLog(@"Err %d: %@", [db lastErrorCode], [db lastErrorMessage]);
+        DDLogError(@"Err %d: %@", [db lastErrorCode], [db lastErrorMessage]);
     }
     
     NSError *err = 0x00;
     FMDBQuickCheck(![db update:@"blah blah blah" withErrorAndBindings:&err]);
     FMDBQuickCheck(err != nil);
     FMDBQuickCheck([err code] == SQLITE_ERROR);
-    NSLog(@"err: '%@'", err);
+    DDLogError(@"err: '%@'", err);
     
     
     
@@ -126,7 +126,7 @@ int main (int argc, const char * argv[]) {
     FMResultSet *rs = [db executeQuery:@"select rowid,* from test where a = ?", @"hi'"];
     while ([rs next]) {
         // just print out what we've got in a number of formats.
-        NSLog(@"%d %@ %@ %@ %@ %f %f",
+        DDLogError(@"%d %@ %@ %@ %@ %f %f",
               [rs intForColumn:@"c"],
               [rs stringForColumn:@"b"],
               [rs stringForColumn:@"a"],
@@ -139,7 +139,7 @@ int main (int argc, const char * argv[]) {
         if (!([[rs columnNameForIndex:0] isEqualToString:@"rowid"] &&
               [[rs columnNameForIndex:1] isEqualToString:@"a"])
               ) {
-            NSLog(@"WHOA THERE BUDDY, columnNameForIndex ISN'T WORKING!");
+            DDLogError(@"WHOA THERE BUDDY, columnNameForIndex ISN'T WORKING!");
             return 7;
         }
     }
@@ -213,7 +213,7 @@ int main (int argc, const char * argv[]) {
         
         uint32_t rAppID = [db applicationID];
         
-        NSLog(@"rAppID: %d", rAppID);
+        DDLogError(@"rAppID: %d", rAppID);
         
         FMDBQuickCheck(rAppID == appID);
         
@@ -221,7 +221,7 @@ int main (int argc, const char * argv[]) {
         
         NSString *s = [db applicationIDString];
         
-        NSLog(@"s: '%@'", s);
+        DDLogError(@"s: '%@'", s);
         
         FMDBQuickCheck([s isEqualToString:@"acrn"]);
         
@@ -279,7 +279,7 @@ int main (int argc, const char * argv[]) {
         FMDBQuickCheck(rc);
         
         if (!rc) {
-            NSLog(@"ERROR: %d - %@", db.lastErrorCode, db.lastErrorMessage);
+            DDLogError(@"ERROR: %d - %@", db.lastErrorCode, db.lastErrorMessage);
         }
     
         
@@ -317,14 +317,14 @@ int main (int argc, const char * argv[]) {
             system("/usr/bin/open /tmp/compass_data_no_copy.icns");
         }
         else {
-            NSLog(@"Could not select image.");
+            DDLogError(@"Could not select image.");
         }
         
         [rs close];
         
     }
     else {
-        NSLog(@"Can't find compass image..");
+        DDLogError(@"Can't find compass image..");
     }
     
     
@@ -332,12 +332,12 @@ int main (int argc, const char * argv[]) {
     [db executeUpdate:@"create table t1 (a integer)"];
     [db executeUpdate:@"insert into t1 values (?)", [NSNumber numberWithInt:5]];
     
-    NSLog(@"Count of changes (should be 1): %d", [db changes]);
+    DDLogError(@"Count of changes (should be 1): %d", [db changes]);
     FMDBQuickCheck([db changes] == 1);
     
     int ia = [db intForQuery:@"select a from t1 where a = ?", [NSNumber numberWithInt:5]];
     if (ia != 5) {
-        NSLog(@"intForQuery didn't work (a != 5)");
+        DDLogError(@"intForQuery didn't work (a != 5)");
     }
     
     // test the busy rety timeout schtuff.
@@ -350,16 +350,16 @@ int main (int argc, const char * argv[]) {
     rs = [newDb executeQuery:@"select rowid,* from test where a = ?", @"hi'"];
     [rs next]; // just grab one... which will keep the db locked.
     
-    NSLog(@"Testing the busy timeout");
+    DDLogError(@"Testing the busy timeout");
     
     BOOL success = [db executeUpdate:@"insert into t1 values (5)"];
     
     if (success) {
-        NSLog(@"Whoa- the database didn't stay locked!");
+        DDLogError(@"Whoa- the database didn't stay locked!");
         return 7;
     }
     else {
-        NSLog(@"Hurray, our timeout worked");
+        DDLogError(@"Hurray, our timeout worked");
     }
     
     [rs close];
@@ -367,11 +367,11 @@ int main (int argc, const char * argv[]) {
     
     success = [db executeUpdate:@"insert into t1 values (5)"];
     if (!success) {
-        NSLog(@"Whoa- the database shouldn't be locked!");
+        DDLogError(@"Whoa- the database shouldn't be locked!");
         return 8;
     }
     else {
-        NSLog(@"Hurray, we can insert again!");
+        DDLogError(@"Hurray, we can insert again!");
     }
     
     
@@ -380,7 +380,7 @@ int main (int argc, const char * argv[]) {
     [db executeUpdate:@"create table t2 (a integer, b integer)"];
     
     if (![db executeUpdate:@"insert into t2 values (?, ?)", nil, [NSNumber numberWithInt:5]]) {
-        NSLog(@"UH OH, can't insert a nil value for some reason...");
+        DDLogError(@"UH OH, can't insert a nil value for some reason...");
     }
     
     
@@ -392,17 +392,17 @@ int main (int argc, const char * argv[]) {
         NSString *b = [rs stringForColumnIndex:1];
         
         if (aa != nil) {
-            NSLog(@"%s:%d", __FUNCTION__, __LINE__);
-            NSLog(@"OH OH, PROBLEMO!");
+            DDLogError(@"%s:%d", __FUNCTION__, __LINE__);
+            DDLogError(@"OH OH, PROBLEMO!");
             return 10;
         }
         else {
-            NSLog(@"YAY, NULL VALUES");
+            DDLogError(@"YAY, NULL VALUES");
         }
         
         if (![b isEqualToString:@"5"]) {
-            NSLog(@"%s:%d", __FUNCTION__, __LINE__);
-            NSLog(@"OH OH, PROBLEMO!");
+            DDLogError(@"%s:%d", __FUNCTION__, __LINE__);
+            DDLogError(@"OH OH, PROBLEMO!");
             return 10;
         }
     }
@@ -444,7 +444,7 @@ int main (int argc, const char * argv[]) {
         [rs2 next];
         
         if ([rs2 intForColumnIndex:0] != newVal) {
-            NSLog(@"Oh crap, our update didn't work out!");
+            DDLogError(@"Oh crap, our update didn't work out!");
             return 9;
         }
         
@@ -466,16 +466,16 @@ int main (int argc, const char * argv[]) {
         NSString *b = [rs stringForColumnIndex:1];
         
         if (!b) {
-            NSLog(@"Oh crap, the nil / null inserts didn't work!");
+            DDLogError(@"Oh crap, the nil / null inserts didn't work!");
             return 10;
         }
         
         if (a) {
-            NSLog(@"Oh crap, the nil / null inserts didn't work (son of error message)!");
+            DDLogError(@"Oh crap, the nil / null inserts didn't work (son of error message)!");
             return 11;
         }
         else {
-            NSLog(@"HURRAH FOR NSNULL (and nil)!");
+            DDLogError(@"HURRAH FOR NSNULL (and nil)!");
         }
     }
     
@@ -500,19 +500,19 @@ int main (int argc, const char * argv[]) {
         NSDate *c = [rs dateForColumnIndex:2];
         
         if (a) {
-            NSLog(@"Oh crap, the null date insert didn't work!");
+            DDLogError(@"Oh crap, the null date insert didn't work!");
             return 12;
         }
         
         if (!c) {
-            NSLog(@"Oh crap, the 0 date insert didn't work!");
+            DDLogError(@"Oh crap, the 0 date insert didn't work!");
             return 12;
         }
         
         NSTimeInterval dti = fabs([b timeIntervalSinceDate:date]);
         
         if (floor(dti) > 0.0) {
-            NSLog(@"Date matches didn't really happen... time difference of %f", dti);
+            DDLogError(@"Date matches didn't really happen... time difference of %f", dti);
             return 13;
         }
         
@@ -520,7 +520,7 @@ int main (int argc, const char * argv[]) {
         dti = fabs([c timeIntervalSinceDate:[NSDate dateWithTimeIntervalSince1970:0]]);
         
         if (floor(dti) > 0.0) {
-            NSLog(@"Date matches didn't really happen... time difference of %f", dti);
+            DDLogError(@"Date matches didn't really happen... time difference of %f", dti);
             return 13;
         }
     }
@@ -529,7 +529,7 @@ int main (int argc, const char * argv[]) {
     assert(foo);
     NSTimeInterval dti = fabs([foo timeIntervalSinceDate:date]);
     if (floor(dti) > 0.0) {
-        NSLog(@"Date matches didn't really happen... time difference of %f", dti);
+        DDLogError(@"Date matches didn't really happen... time difference of %f", dti);
         return 14;
     }
     
@@ -822,7 +822,7 @@ int main (int argc, const char * argv[]) {
     rs = [db executeQuery:@"PRAGMA database_list"];
     while ([rs next]) {
         NSString *file = [rs stringForColumn:@"file"];
-        NSLog(@"database_list: %@", file);
+        DDLogError(@"database_list: %@", file);
     }
     
     
@@ -833,7 +833,7 @@ int main (int argc, const char * argv[]) {
         FMStatement *statement;
         
         while ((statement = [e nextObject])) {
-            NSLog(@"%@", statement);
+            DDLogError(@"%@", statement);
         }
     }
     
@@ -904,14 +904,14 @@ int main (int argc, const char * argv[]) {
                 [NSThread sleepForTimeInterval:.1];
                 
                 [queue inTransaction:^(FMDatabase *adb, BOOL *rollback) {
-                    NSLog(@"Starting query  %ld", nby);
+                    DDLogError(@"Starting query  %ld", nby);
                     
                     FMResultSet *rsl = [adb executeQuery:@"select * from qfoo where foo like 'h%'"];
                     while ([rsl next]) {
                         ;// whatever.
                     }
                     
-                    NSLog(@"Ending query    %ld", nby);
+                    DDLogError(@"Ending query    %ld", nby);
                 }];
                 
             }
@@ -921,11 +921,11 @@ int main (int argc, const char * argv[]) {
             }
             
             [queue inTransaction:^(FMDatabase *adb, BOOL *rollback) {
-                NSLog(@"Starting update %ld", nby);
+                DDLogError(@"Starting update %ld", nby);
                 [adb executeUpdate:@"insert into qfoo values ('1')"];
                 [adb executeUpdate:@"insert into qfoo values ('2')"];
                 [adb executeUpdate:@"insert into qfoo values ('3')"];
-                NSLog(@"Ending update   %ld", nby);
+                DDLogError(@"Ending update   %ld", nby);
             }];
         });
         
@@ -999,7 +999,7 @@ int main (int argc, const char * argv[]) {
             
             FMDBQuickCheck(![adb hasOpenResultSets]);
             
-            NSLog(@"after rollback, rowCount is %d (should be 2)", rowCount);
+            DDLogError(@"after rollback, rowCount is %d (should be 2)", rowCount);
             
             FMDBQuickCheck(rowCount == 2);
         }];
@@ -1028,7 +1028,7 @@ int main (int argc, const char * argv[]) {
                 }
             }
             else {
-                NSLog(@"Unknown formart for StringStartsWithH (%d) %s:%d", sqlite3_value_type(aargv[0]), __FUNCTION__, __LINE__);
+                DDLogError(@"Unknown formart for StringStartsWithH (%d) %s:%d", sqlite3_value_type(aargv[0]), __FUNCTION__, __LINE__);
                 sqlite3_result_null(context);
             }
         }];
@@ -1038,7 +1038,7 @@ int main (int argc, const char * argv[]) {
         while ([ars next]) {
             rowCount++;
             
-            NSLog(@"Does %@ start with 'h'?", [rs stringForColumnIndex:0]);
+            DDLogError(@"Does %@ start with 'h'?", [rs stringForColumnIndex:0]);
             
         }
         FMDBQuickCheck(rowCount == 2);
@@ -1051,7 +1051,7 @@ int main (int argc, const char * argv[]) {
     }];
     
     
-    NSLog(@"That was version %@ of sqlite", [FMDatabase sqliteLibVersion]);
+    DDLogError(@"That was version %@ of sqlite", [FMDatabase sqliteLibVersion]);
     
     
 }// this is the end of our @autorelease pool.
@@ -1293,7 +1293,7 @@ void testPool(NSString *dbPath) {
             }
             
             [dbPool inDatabase:^(FMDatabase *db) {
-                NSLog(@"Starting query  %ld", nby);
+                DDLogError(@"Starting query  %ld", nby);
                 
                 FMResultSet *rsl = [db executeQuery:@"select * from likefoo where foo like 'h%'"];
                 while ([rsl next]) {
@@ -1302,11 +1302,11 @@ void testPool(NSString *dbPath) {
                     }
                 }
                 
-                NSLog(@"Ending query    %ld", nby);
+                DDLogError(@"Ending query    %ld", nby);
             }];
         });
         
-        NSLog(@"Number of open databases after crazy gcd stuff: %ld", [dbPool countOfOpenDatabases]);
+        DDLogError(@"Number of open databases after crazy gcd stuff: %ld", [dbPool countOfOpenDatabases]);
     }
     
     
@@ -1326,14 +1326,14 @@ void testPool(NSString *dbPath) {
                 [NSThread sleepForTimeInterval:.1];
                 
                 [dbPool inTransaction:^(FMDatabase *db, BOOL *rollback) {
-                    NSLog(@"Starting query  %ld", nby);
+                    DDLogError(@"Starting query  %ld", nby);
                     
                     FMResultSet *rsl = [db executeQuery:@"select * from likefoo where foo like 'h%'"];
                     while ([rsl next]) {
                         ;// whatever.
                     }
                     
-                    NSLog(@"Ending query    %ld", nby);
+                    DDLogError(@"Ending query    %ld", nby);
                 }];
                 
             }
@@ -1343,11 +1343,11 @@ void testPool(NSString *dbPath) {
             }
             
             [dbPool inTransaction:^(FMDatabase *db, BOOL *rollback) {
-                NSLog(@"Starting update %ld", nby);
+                DDLogError(@"Starting update %ld", nby);
                 [db executeUpdate:@"insert into likefoo values ('1')"];
                 [db executeUpdate:@"insert into likefoo values ('2')"];
                 [db executeUpdate:@"insert into likefoo values ('3')"];
-                NSLog(@"Ending update   %ld", nby);
+                DDLogError(@"Ending update   %ld", nby);
             }];
         });
         
@@ -1374,11 +1374,11 @@ void testOneDateFormat( FMDatabase *db, NSDate *testDate ) {
     if ([rs next]) {
         NSDate *found = [rs dateForColumnIndex:0];
         if (NSOrderedSame != [testDate compare:found]) {
-            NSLog(@"Did not get back what we stored.");
+            DDLogError(@"Did not get back what we stored.");
         }
     }
     else {
-        NSLog(@"Insertion borked");
+        DDLogError(@"Insertion borked");
     }
     [rs close];
 }
