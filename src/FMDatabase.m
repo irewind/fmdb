@@ -1,7 +1,6 @@
 #import "FMDatabase.h"
 #import "unistd.h"
 #import <objc/runtime.h>
-#import "DDLog.h"
 
 static const int ddLogLevel = LOG_LEVEL_OFF;
 
@@ -140,8 +139,8 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
             usleep(20);
             
             if (_busyRetryTimeout && (numberOfRetries++ > _busyRetryTimeout)) {
-                DDLogError(@"%s:%d", __FUNCTION__, __LINE__);
-                DDLogError(@"Database busy, unable to close");
+                DDLogInfo(@"%s:%d", __FUNCTION__, __LINE__);
+                DDLogInfo(@"Database busy, unable to close");
                 return NO;
             }
             
@@ -149,7 +148,7 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
                 triedFinalizingOpenStatements = YES;
                 sqlite3_stmt *pStmt;
                 while ((pStmt = sqlite3_next_stmt(_db, 0x00)) !=0) {
-                    DDLogError(@"Closing leaked statement");
+                    DDLogInfo(@"Closing leaked statement");
                     sqlite3_finalize(pStmt);
                 }
             }
@@ -303,7 +302,7 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
 }
 
 - (void)warnInUse {
-    DDLogError(@"The FMDatabase %@ is currently in use.", self);
+    DDLogInfo(@"The FMDatabase %@ is currently in use.", self);
     
 #ifndef NS_BLOCK_ASSERTIONS
     if (_crashOnErrors) {
@@ -585,7 +584,7 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
     FMResultSet *rs         = 0x00;
     
     if (_traceExecution && sql) {
-        DDLogError(@"%@ executeQuery: %@", self, sql);
+        DDLogInfo(@"%@ executeQuery: %@", self, sql);
     }
     
     if (_shouldCacheStatements) {
@@ -607,8 +606,8 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
                 usleep(20);
                 
                 if (_busyRetryTimeout && (numberOfRetries++ > _busyRetryTimeout)) {
-                    DDLogError(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [self databasePath]);
-                    DDLogError(@"Database busy");
+                    DDLogInfo(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [self databasePath]);
+                    DDLogInfo(@"Database busy");
                     sqlite3_finalize(pStmt);
                     _isExecutingStatement = NO;
                     return nil;
@@ -681,10 +680,10 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
             
             if (_traceExecution) {
                 if ([obj isKindOfClass:[NSData class]]) {
-                    DDLogError(@"data: %ld bytes", (unsigned long)[(NSData*)obj length]);
+                    DDLogInfo(@"data: %ld bytes", (unsigned long)[(NSData*)obj length]);
                 }
                 else {
-                    DDLogError(@"obj: %@", obj);
+                    DDLogInfo(@"obj: %@", obj);
                 }
             }
             
@@ -773,7 +772,7 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
     FMStatement *cachedStmt  = 0x00;
     
     if (_traceExecution && sql) {
-        DDLogError(@"%@ executeUpdate: %@", self, sql);
+        DDLogInfo(@"%@ executeUpdate: %@", self, sql);
     }
     
     if (_shouldCacheStatements) {
@@ -795,8 +794,8 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
                 usleep(20);
                 
                 if (_busyRetryTimeout && (numberOfRetries++ > _busyRetryTimeout)) {
-                    DDLogError(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [self databasePath]);
-                    DDLogError(@"Database busy");
+                    DDLogInfo(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [self databasePath]);
+                    DDLogInfo(@"Database busy");
                     sqlite3_finalize(pStmt);
                     _isExecutingStatement = NO;
                     return NO;
@@ -854,7 +853,7 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
                 idx++;
             }
             else {
-                DDLogError(@"Could not find index for %@", dictionaryKey);
+                DDLogInfo(@"Could not find index for %@", dictionaryKey);
             }
         }
     }
@@ -875,10 +874,10 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
             
             if (_traceExecution) {
                 if ([obj isKindOfClass:[NSData class]]) {
-                    DDLogError(@"data: %ld bytes", (unsigned long)[(NSData*)obj length]);
+                    DDLogInfo(@"data: %ld bytes", (unsigned long)[(NSData*)obj length]);
                 }
                 else {
-                    DDLogError(@"obj: %@", obj);
+                    DDLogInfo(@"obj: %@", obj);
                 }
             }
             
@@ -918,8 +917,8 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
             usleep(20);
             
             if (_busyRetryTimeout && (numberOfRetries++ > _busyRetryTimeout)) {
-                DDLogError(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [self databasePath]);
-                DDLogError(@"Database busy");
+                DDLogInfo(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [self databasePath]);
+                DDLogInfo(@"Database busy");
                 retry = NO;
             }
         }
@@ -971,8 +970,8 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
     }
     
     if (closeErrorCode != SQLITE_OK) {
-        //DDLogError(@"Unknown error finalizing or resetting statement (%d: %s)", closeErrorCode, sqlite3_errmsg(_db));
-        //DDLogError(@"DB Query: %@", sql);
+        DDLogError(@"Unknown error finalizing or resetting statement (%d: %s)", closeErrorCode, sqlite3_errmsg(_db));
+        DDLogError(@"DB Query: %@", sql);
     }
     
     _isExecutingStatement = NO;

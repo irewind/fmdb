@@ -19,7 +19,9 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
  something in dispatch_sync
  
  */
- 
+
+static const int ddLogLevel = LOG_LEVEL_ERROR;
+
 @implementation FMDatabaseQueue
 
 @synthesize path = _path;

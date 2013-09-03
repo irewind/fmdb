@@ -1,14 +1,12 @@
 #import "FMResultSet.h"
 #import "FMDatabase.h"
 #import "unistd.h"
-#import "DDLog.h"
 
-static const int ddLogLevel = LOG_LEVEL_OFF;
+static const int ddLogLevel = LOG_LEVEL_ERROR;
 
 @interface FMDatabase ()
 - (void)resultSetDidClose:(FMResultSet *)resultSet;
 @end
-
 
 @implementation FMResultSet
 @synthesize query=_query;
@@ -109,7 +107,7 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
         return FMDBReturnAutoreleased([dict copy]);
     }
     else {
-        DDLogError(@"Warning: There seem to be no columns in this set.");
+        DDLogInfo(@"Warning: There seem to be no columns in this set.");
     }
     
     return nil;
@@ -137,7 +135,7 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
         return dict;
     }
     else {
-        DDLogError(@"Warning: There seem to be no columns in this set.");
+        DDLogInfo(@"Warning: There seem to be no columns in this set.");
     }
     
     return nil;
@@ -171,8 +169,8 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
             
             if ([_parentDB busyRetryTimeout] && (numberOfRetries++ > [_parentDB busyRetryTimeout])) {
                 
-                DDLogError(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [_parentDB databasePath]);
-                DDLogError(@"Database busy");
+                DDLogInfo(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [_parentDB databasePath]);
+                DDLogInfo(@"Database busy");
                 break;
             }
         }
