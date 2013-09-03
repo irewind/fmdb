@@ -20,8 +20,6 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
  
  */
 
-static const int ddLogLevel = LOG_LEVEL_ERROR;
-
 @implementation FMDatabaseQueue
 
 @synthesize path = _path;
