@@ -40,10 +40,10 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
     if (self) {
         _databasePath       = [aPath copy];
         _openResultSets     = [[NSMutableSet alloc] init];
-        _db                 = 0x00;
-        _logsErrors         = 0x00;
-        _crashOnErrors      = 0x00;
-        _busyRetryTimeout   = 0x00;
+        _db                 = nil;
+        _logsErrors         = YES;
+        _crashOnErrors      = NO;
+        _busyRetryTimeout   = 0;
     }
     
     return self;
@@ -281,7 +281,7 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
 }
 
 - (NSString *)stringFromDate:(NSDate *)date {
-        return [_dateFormat stringFromDate:date];
+    return [_dateFormat stringFromDate:date];
 }
 
 
@@ -706,7 +706,7 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
         statement = [[FMStatement alloc] init];
         [statement setStatement:pStmt];
         
-        if (_shouldCacheStatements) {
+        if (_shouldCacheStatements && sql) {
             [self setCachedStatement:statement forQuery:sql];
         }
     }
@@ -1069,11 +1069,9 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
 
 - (BOOL)startSavePointWithName:(NSString*)name error:(NSError**)outErr {
     
-    // FIXME: make sure the savepoint name doesn't have a ' in it.
-    
     NSParameterAssert(name);
     
-    if (![self executeUpdate:[NSString stringWithFormat:@"savepoint '%@';", name]]) {
+    if (![self executeUpdate:@"savepoint '?';", name]) {
 
         if (outErr) {
             *outErr = [self lastError];
@@ -1089,7 +1087,7 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
     
     NSParameterAssert(name);
     
-    BOOL worked = [self executeUpdate:[NSString stringWithFormat:@"release savepoint '%@';", name]];
+    BOOL worked = [self executeUpdate:@"release savepoint '?';", name];
     
     if (!worked && outErr) {
         *outErr = [self lastError];
@@ -1102,9 +1100,9 @@ static const int ddLogLevel = LOG_LEVEL_OFF;
     
     NSParameterAssert(name);
     
-    BOOL worked = [self executeUpdate:[NSString stringWithFormat:@"rollback transaction to savepoint '%@';", name]];
+    BOOL worked = [self executeUpdate:@"rollback transaction to savepoint '?';", name];
     
-    if (!worked && *outErr) {
+    if (!worked && outErr) {
         *outErr = [self lastError];
     }
     

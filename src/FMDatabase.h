@@ -258,24 +258,38 @@
 
 /** Execute update statement
  
+ This method employs [`sqlite3_bind`](http://sqlite.org/c3ref/bind_blob.html) for any optional value parameters. This  properly escapes any characters that need escape sequences (e.g. quotation marks), which eliminates simple SQL errors as well as protects against SQL injection attacks. This method natively handles `NSString`, `NSNumber`, `NSNull`, `NSDate`, and `NSData` objects. All other object types will be interpreted as text values using the object's `description` method.
+
  @param sql The SQL to be performed, with optional `?` placeholders.
  
  @param outErr A reference to the `NSError` pointer to be updated with an auto released `NSError` object if an error if an error occurs. If `nil`, no `NSError` object will be returned.
  
- @param ... Optional parameters to bind to `?` placeholders in the SQL statement.
- 
+ @param ... Optional parameters to bind to `?` placeholders in the SQL statement. These should be Objective-C objects (e.g. `NSString`, `NSNumber`, etc.), not fundamental C data types (e.g. `int`, `char *`, etc.).
+
  @return `YES` upon success; `NO` upon failure. If failed, you can call `<lastError>`, `<lastErrorCode>`, or `<lastErrorMessage>` for diagnostic information regarding the failure.
+
+ @see lastError
+ @see lastErrorCode
+ @see lastErrorMessage
+ @see [`sqlite3_bind`](http://sqlite.org/c3ref/bind_blob.html)
  */
 
 - (BOOL)update:(NSString*)sql withErrorAndBindings:(NSError**)outErr, ...;
 
 /** Execute update statement
 
+ This method employs [`sqlite3_bind`](http://sqlite.org/c3ref/bind_blob.html) for any optional value parameters. This  properly escapes any characters that need escape sequences (e.g. quotation marks), which eliminates simple SQL errors as well as protects against SQL injection attacks. This method natively handles `NSString`, `NSNumber`, `NSNull`, `NSDate`, and `NSData` objects. All other object types will be interpreted as text values using the object's `description` method.
+ 
  @param sql The SQL to be performed, with optional `?` placeholders.
 
- @param ... Optional parameters to bind to `?` placeholders in the SQL statement.
+ @param ... Optional parameters to bind to `?` placeholders in the SQL statement. These should be Objective-C objects (e.g. `NSString`, `NSNumber`, etc.), not fundamental C data types (e.g. `int`, `char *`, etc.).
 
  @return `YES` upon success; `NO` upon failure. If failed, you can call `<lastError>`, `<lastErrorCode>`, or `<lastErrorMessage>` for diagnostic information regarding the failure.
+ 
+ @see lastError
+ @see lastErrorCode
+ @see lastErrorMessage
+ @see [`sqlite3_bind`](http://sqlite.org/c3ref/bind_blob.html)
  */
 
 - (BOOL)executeUpdate:(NSString*)sql, ...;
@@ -290,7 +304,12 @@
 
  @return `YES` upon success; `NO` upon failure. If failed, you can call `<lastError>`, `<lastErrorCode>`, or `<lastErrorMessage>` for diagnostic information regarding the failure.
 
- @warning This should be used with great care. Generally, you should use `<executeUpdate:>` (with `?` placeholders) rather than this method.
+ @see executeUpdate:
+ @see lastError
+ @see lastErrorCode
+ @see lastErrorMessage
+ 
+ @warning This should be used with great care. Generally, instead of this method, you should use `<executeUpdate:>` (with `?` placeholders in the SQL), which properly escapes quotation marks encountered inside the values (minimizing errors and protecting against SQL injection attack) and handles a wider variety of data types. See `<executeUpdate:>` for more information. 
  */
 
 - (BOOL)executeUpdateWithFormat:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
@@ -304,6 +323,10 @@
  @param arguments A `NSArray` of objects to be used when binding values to the `?` placeholders in the SQL statement.
 
  @return `YES` upon success; `NO` upon failure. If failed, you can call `<lastError>`, `<lastErrorCode>`, or `<lastErrorMessage>` for diagnostic information regarding the failure.
+
+ @see lastError
+ @see lastErrorCode
+ @see lastErrorMessage
  */
 
 - (BOOL)executeUpdate:(NSString*)sql withArgumentsInArray:(NSArray *)arguments;
@@ -317,7 +340,11 @@
  @param arguments A `NSDictionary` of objects keyed by column names that will be used when binding values to the `?` placeholders in the SQL statement.
 
  @return `YES` upon success; `NO` upon failure. If failed, you can call `<lastError>`, `<lastErrorCode>`, or `<lastErrorMessage>` for diagnostic information regarding the failure.
- */
+
+ @see lastError
+ @see lastErrorCode
+ @see lastErrorMessage
+*/
 
 - (BOOL)executeUpdate:(NSString*)sql withParameterDictionary:(NSDictionary *)arguments;
 
@@ -328,7 +355,7 @@
  This routine returns the rowid of the most recent successful `INSERT` into the database from the database connection in the first argument. As of SQLite version 3.7.7, this routines records the last insert rowid of both ordinary tables and virtual tables. If no successful `INSERT`s have ever occurred on that database connection, zero is returned.
  
  @see [sqlite3_last_insert_rowid()](http://sqlite.org/c3ref/last_insert_rowid.html)
- 
+
  */
 
 - (sqlite_int64)lastInsertRowId;
@@ -354,14 +381,17 @@
  
  In order to iterate through the results of your query, you use a `while()` loop.  You also need to "step" (via `<[FMResultSet next]>`) from one record to the other.
  
+ This method employs [`sqlite3_bind`](http://sqlite.org/c3ref/bind_blob.html) for any optional value parameters. This  properly escapes any characters that need escape sequences (e.g. quotation marks), which eliminates simple SQL errors as well as protects against SQL injection attacks. This method natively handles `NSString`, `NSNumber`, `NSNull`, `NSDate`, and `NSData` objects. All other object types will be interpreted as text values using the object's `description` method.
+
  @param sql The SELECT statement to be performed, with optional `?` placeholders.
 
- @param ... Optional parameters to bind to `?` placeholders in the SQL statement.
+ @param ... Optional parameters to bind to `?` placeholders in the SQL statement. These should be Objective-C objects (e.g. `NSString`, `NSNumber`, etc.), not fundamental C data types (e.g. `int`, `char *`, etc.).
 
  @return A `<FMResultSet>` for the result set upon success; `nil` upon failure. If failed, you can call `<lastError>`, `<lastErrorCode>`, or `<lastErrorMessage>` for diagnostic information regarding the failure.
  
  @see FMResultSet
  @see [`FMResultSet next`](<[FMResultSet next]>)
+ @see [`sqlite3_bind`](http://sqlite.org/c3ref/bind_blob.html)
  */
 
 - (FMResultSet *)executeQuery:(NSString*)sql, ...;
@@ -378,10 +408,11 @@
 
  @return A `<FMResultSet>` for the result set upon success; `nil` upon failure. If failed, you can call `<lastError>`, `<lastErrorCode>`, or `<lastErrorMessage>` for diagnostic information regarding the failure.
 
+ @see executeQuery:
  @see FMResultSet
  @see [`FMResultSet next`](<[FMResultSet next]>)
 
- @warning This should be used with great care. Generally, you should use `<executeQuery:>` (with `?` placeholders) rather than this method.
+ @warning This should be used with great care. Generally, instead of this method, you should use `<executeQuery:>` (with `?` placeholders in the SQL), which properly escapes quotation marks encountered inside the values (minimizing errors and protecting against SQL injection attack) and handles a wider variety of data types. See `<executeQuery:>` for more information.
 
  */
 
