@@ -8,9 +8,8 @@
 
 #import "FMDatabase.h"
 #import "FMDatabaseAdditions.h"
-#import "DDLog.h"
 
-static const int ddLogLevel = LOG_LEVEL_OFF;
+#define DDLogError NSLog
 
 @interface FMDatabase (PrivateStuff)
 - (FMResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args;

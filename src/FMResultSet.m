@@ -2,7 +2,8 @@
 #import "FMDatabase.h"
 #import "unistd.h"
 
-static const int ddLogLevel = LOG_LEVEL_ERROR;
+#define DDLogError NSLog
+#define DDLogInfo NSLog
 
 @interface FMDatabase ()
 - (void)resultSetDidClose:(FMResultSet *)resultSet;

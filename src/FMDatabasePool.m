@@ -9,7 +9,9 @@
 #import "FMDatabasePool.h"
 #import "FMDatabase.h"
 
-static const int ddLogLevel = LOG_LEVEL_ERROR;
+//static const int ddLogLebvel = LOG_LEVEL_ERROR;
+
+#define DDLogError NSLog
 
 @interface FMDatabasePool()
 

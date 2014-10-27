@@ -2,7 +2,8 @@
 #import "unistd.h"
 #import <objc/runtime.h>
 
-static const int ddLogLevel = LOG_LEVEL_OFF;
+#define DDLogInfo NSLog
+#define DDLogError NSLog
 
 @interface FMDatabase ()
 

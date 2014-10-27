@@ -8,10 +8,10 @@
 
 #import "FMDatabaseQueue.h"
 #import "FMDatabase.h"
-#import "DDLog.h"
 
+//static const int ddLogLevel = LOG_LEVEL_OFF;
 
-static const int ddLogLevel = LOG_LEVEL_OFF;
+#define DDLogError NSLog
 /*
  
  Note: we call [self retain]; before using dispatch_sync, just incase 
